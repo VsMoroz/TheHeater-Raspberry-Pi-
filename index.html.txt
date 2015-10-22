@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> <html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Malishko | Temperature control</title>
+    <script type="text/javascript" src="/webiopi.js"></script>
+    <script type="text/javascript">
+
+   var rqTemp, jsCurrTemp, jsColTemp ;
+
+    webiopi().ready(init);
+
+
+    function init() {
+         var content, button;
+        content = $("#content");
+
+    // create a button which call plusReqTemp
+        button = webiopi().createMacroButton("macro", "+", "plusReqTemp");
+        content.append(button); // append button to content div
+
+    // create a button which call minusReqTemp
+        button = webiopi().createMacroButton("macro", "-", "minusReqTemp");
+        content.append(button); // append button to content div
+
+ // create a button which call minusReqTemp
+        button = webiopi().createMacroButton("macro", "reset", "ResetMinMax");
+        // setup helpers to remotely control devices
+        jsCurrTemp = new Temperature("Living_room");
+        jsColTemp = new Temperature("Coolant");
+        $("#coolantTemperature").css("background-color","#CEF3F6");
+        updateUI;
+        updateSensors();
+
+        // automatically refresh UI each seconds
+        setInterval(updateUI, 1000);
+        setInterval(updateSensors, 10000);
+    }
+
+    function updateUI() {
+        // call Temperature.getCelsius REST API
+        // result is asynchronously displayed using the callback
+//        jsCurrTemp.getCelsius(temperatureCallback);
+//        jsColTemp.getCelsius(coltemperatureCallback);
+        webiopi().callMacro("getReqTemp",[],reqTempCallback);
+
+
+        // call MCP.digitalRead REST API
+        //if (mcp.isReady()) {
+        //    mcp.digitalRead(heater, gpioPortDigitalCallback);
+        // }
+
+        // call getMode macro
+        //webiopi().callMacro("getMode", [], modeCallback);
+         webiopi().callMacro("ignition", [], reqIgnition);
+    }
+
+    function updateSensors() {
+        jsCurrTemp.getCelsius(temperatureCallback);
+        jsColTemp.getCelsius(coltemperatureCallback);
+ //       webiopi().callMacro("ignition", [], reqIgnition);
+
+    }
+
+    // callback function used to display the temperature
+
+    function temperatureCallback(sensorName, data) {
+        // jQuery functions
+        $("#currTemperature").text(parseFloat(data).toFixed(1) + "°C");
+    }
+
+     function coltemperatureCallback(sensorName, data) {
+        // jQuery functions
+        $("#coolantTemperature").text(parseFloat(data).toFixed() + " °C");
+    }
+
+     function reqTempCallback (macro, args,data){
+        $("#reQTemperature").text(data);
+
+     }
+
+     function reqIgnition (Ignit, args,data){
+        if (data == '1'){
+        // jQuery functions
+            $("#reQTemperature").css("background-color","#F7BE81");
+        }else {
+        // jQuery functions
+             $("#reQTemperature").css("background-color","#CEF6CE");
+        }
+     }
+
+
+
+    </script>
+
+    <style type="text/css">
+        button {
+            display: block;
+            margin: 5px 5px 5px 5px;
+            width: 500px;
+            height: 187px;
+            font-size: 110pt;
+            font-weight: semibold;
+            color: black;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <div align="center">
+    <h1>The Heater at Malishko str., Required Temperature</h1>
+    </div>
+
+<div align="center">
+     <button id="reQTemperature"/>
+    </div>
+
+<div  align="center">
+ <h1><font  color="#0040FF">Min</font>/<font  color="#0040FF">Max</font>/Now:
+ Indoor(<font size="7" color="#0040FF">18.3</font>/<font size="7" color="#0040FF">20.3</font>),
+ Coolant(<font size="7" color="#0040FF">40</font>/<font size="7" color="#0040FF">83</font>) °C</h1>
+
+ <button id="currTemperature"/>
+    </div>
+
+<div align="center">
+    <button id="coolantTemperature"/>
+    </div>
+
+<div id="content" align="center"></div>
+
+<div align="center">
+ <h1>The Heater's worked <font size="7" color="#0040FF">200</font> for <font size="7" color="#0040FF">14</font> days</h1>
+</div>
+
+
+</body>
+
+
+</html>
