@@ -25,6 +25,7 @@
  // create a button which call minusReqTemp
         button = webiopi().createMacroButton("macro", "reset", "ResetMinMax");
         // setup helpers to remotely control devices
+        
         jsCurrTemp = new Temperature("Living_room");
         jsColTemp = new Temperature("Coolant");
         $("#coolantTemperature").css("background-color","#CEF3F6");
