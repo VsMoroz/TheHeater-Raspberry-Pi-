@@ -15,26 +15,29 @@
         content = $("#content");
 
     // create a button which call plusReqTemp
-        button = webiopi().createMacroButton("macro", "+", "plusReqTemp");
+        button = webiopi().createMacroButton("plusBT", "+", "plusReqTemp");
         content.append(button); // append button to content div
 
     // create a button which call minusReqTemp
-        button = webiopi().createMacroButton("macro", "-", "minusReqTemp");
+        button = webiopi().createMacroButton("minusBT", "-", "minusReqTemp");
         content.append(button); // append button to content div
 
- // create a button which call minusReqTemp
-        button = webiopi().createMacroButton("macro", "reset", "ResetMinMax");
+    // create a button which call resetStatistic
+        button = webiopi().createMacroButton("statResetBT", "reset", "statReset");
+        content.append(button); // append button to content div
+
+
         // setup helpers to remotely control devices
-        
         jsCurrTemp = new Temperature("Living_room");
         jsColTemp = new Temperature("Coolant");
         $("#coolantTemperature").css("background-color","#CEF3F6");
+        $("#reQTemperature").css("background-color","#A9F5A9");
         updateUI;
         updateSensors();
 
-        // automatically refresh UI each seconds
+          // automatically refresh UI each seconds
         setInterval(updateUI, 1000);
-        setInterval(updateSensors, 10000);
+        setInterval(updateSensors, 5000);
     }
 
     function updateUI() {
@@ -42,7 +45,7 @@
         // result is asynchronously displayed using the callback
 //        jsCurrTemp.getCelsius(temperatureCallback);
 //        jsColTemp.getCelsius(coltemperatureCallback);
-        webiopi().callMacro("getReqTemp",[],reqTempCallback);
+          webiopi().callMacro("getReqTemp",[],reqTempCallback);
 
 
         // call MCP.digitalRead REST API
@@ -53,14 +56,17 @@
         // call getMode macro
         //webiopi().callMacro("getMode", [], modeCallback);
          webiopi().callMacro("ignition", [], reqIgnition);
+          webiopi().callMacro("wp", [], reqWP);
     }
 
     function updateSensors() {
         jsCurrTemp.getCelsius(temperatureCallback);
         jsColTemp.getCelsius(coltemperatureCallback);
+        updateMinMax();
  //       webiopi().callMacro("ignition", [], reqIgnition);
 
     }
+
 
     // callback function used to display the temperature
 
@@ -70,7 +76,7 @@
     }
 
      function coltemperatureCallback(sensorName, data) {
-        // jQuery functions
+     // jQuery functions
         $("#coolantTemperature").text(parseFloat(data).toFixed() + " °C");
     }
 
@@ -79,24 +85,48 @@
 
      }
 
-     function reqIgnition (Ignit, args,data){
+     function reqWP (Ignit, args,data){
         if (data == '1'){
         // jQuery functions
-            $("#reQTemperature").css("background-color","#F7BE81");
+            //$("#coolantTemperature").css("background-color","#8181F7");
+            $("#icWp").show('slow');
         }else {
         // jQuery functions
-             $("#reQTemperature").css("background-color","#CEF6CE");
+             //$("#coolantTemperature").css("background-color","#CEF3F6");
+             $("#icWp").hide();
+        }
+     }
+function reqIgnition (Ignit, args,data){
+        if (data == '1'){
+        // jQuery functions
+            //$("#coolantTemperature").css("color","#F4FA58");
+            $("#icGas").show('slow');
+        }else {
+        // jQuery functions
+             //$("#coolantTemperature").css("color","#000000");
+             $("#icGas").hide();
         }
      }
 
 
+     function updateMinMax(){
+    webiopi().callMacro("getCurrTempMin",[],function(macro,args,arg){$("#indMin").text(parseFloat(arg).toFixed(1));});
+    webiopi().callMacro("getCurrTempMax",[],function(macro,args,arg){$("#indMax").text(parseFloat(arg).toFixed(1));});
+    webiopi().callMacro("getCoolTempMin",[],function(macro,args,arg){$("#clMin").text(parseFloat(arg).toFixed());});
+    webiopi().callMacro("getCoolTempMax",[],function(macro,args,arg){$("#clMax").text(parseFloat(arg).toFixed());});
+    webiopi().callMacro("passedD",[],function(macro,args,arg){$("#psDays").text(arg);});
+    webiopi().callMacro("onWork",[],function(macro,args,arg){$("#hrsON").text(arg);});
+    //$("#psDays").text("arg");
+     }
 
     </script>
 
     <style type="text/css">
         button {
+
+
             display: block;
-            margin: 5px 5px 5px 5px;
+            margin: 12px 5px 5px 5px;
             width: 500px;
             height: 187px;
             font-size: 110pt;
@@ -104,39 +134,158 @@
             color: black;
         }
 
+          #plusBT, #minusBT {
+            display: block;
+            margin: 5px 5px 5px 5px;
+            width: 214px;
+            height: 187px;
+            font-size: 110pt;
+            font-weight: semibold;
+            color: black;
+        }
 
-    </style>
+         #plusBT {position:absolute;
+
+           left:2px;
+           top: 280px;
+        }
+         #minusBT {position:absolute;
+
+           left:2px;
+           top: 481px;
+       }
+        #main {
+          position:absolute;
+          margin: 0px 5px 5px 5px;
+            width: 960px;
+        }
+
+
+       #icWp {position:absolute;
+
+           left:741px;
+           top: 500px;
+       }
+       #icGas{
+        position:absolute;
+
+           left:741px;
+           top: 300px;
+
+       }
+
+    #lebelIndoor, #lebelCoolant, #lebelRequired, #idnMnMx, #colMnMx {position:absolute;
+
+           left:2px;
+           top: 2px;
+           font-size: 29pt;
+           color: red;
+           font-weight: 600;
+        }
+
+   #lebelIndoor {position:absolute;
+
+         left:240px;
+         top: 85px;
+        }
+    #lebelCoolant {position:absolute;
+         color:#6E6E6E;
+         left:240px;
+         top: 285px;
+  }
+
+    #lebelRequired {position:absolute;
+         color:#6E6E6E;
+         left:240px;
+         top: 483px;
+        }
+     #idnMnMx {position:absolute;
+
+         left:495px;
+         top: 227px;
+         color:#6E6E6E;
+        }
+
+     #colMnMx {position:absolute;
+
+         left:485px;
+         top: 427px;
+          color:#6E6E6E;
+        }
+   </style>
 </head>
 
 <body>
-    <div align="center">
-    <h1>The Heater at Malishko str., Required Temperature</h1>
+      <div align="center">
+     <div id='main' align="center">
+     <div>
+     <h1>The Heater at Malishko str.,
+         <!--Indoor (min/max:<font size="7" id='indMin' color="#0040FF">-</font>/<font size="7" id='indMax' color="#0040FF">-</font>)°C</h1> -->
+     </div>
+
+     <div id='lebelIndoor'>
+      Indoor
+     </div>
+
+      <div id='lebelCoolant'>
+      Coolant
     </div>
 
-<div align="center">
+     <div id='lebelRequired'>
+      Required
+     </div>
+
+
+      <div id='idnMnMx'>
+      <font id='indMin'></font>/<font id='indMax'></font>
+     </div>
+
+      <div id='colMnMx'>
+      <label id='clMin'></label>/<label id='clMax'></label>
+      </div>
+
+
+     <div>
+      <button id="currTemperature"/>
+     </div>
+<!--    <div>
+      <h1> Coolant (min/max:<font size="7" id='clMin' color="#0040FF">-</font>/<font size="7" id='clMax' color="#0040FF">-</font>)°C,
+      Required Temperature</h1>
+      </div>
+-->
+
+ <div  id='icGas'>
+  <img height='160' src="http://www.walshandsonltd.co.uk/images/Natural-Gas.gif" alt="Gas On">
+  </div>
+
+
+<div>
+<button id="coolantTemperature"/>
+</div>
+
+<div id='icWp'>
+<img  height='160'  src="http://1.bp.blogspot.com/-yrxU5mYKFEY/VMtikRsQ5VI/AAAAAAAAAjk/svEmHbs1CrY/s1600/vanePumpLarge4.gif" alt="water pump on">
+</div>
+<div>
      <button id="reQTemperature"/>
     </div>
 
-<div  align="center">
- <h1><font  color="#0040FF">Min</font>/<font  color="#0040FF">Max</font>/Now:
- Indoor(<font size="7" color="#0040FF">18.3</font>/<font size="7" color="#0040FF">20.3</font>),
- Coolant(<font size="7" color="#0040FF">40</font>/<font size="7" color="#0040FF">83</font>) °C</h1>
-
- <button id="currTemperature"/>
-    </div>
-
-<div align="center">
-    <button id="coolantTemperature"/>
-    </div>
-
-<div id="content" align="center"></div>
-
-<div align="center">
- <h1>The Heater's worked <font size="7" color="#0040FF">200</font> for <font size="7" color="#0040FF">14</font> days</h1>
+<div>
+ <h1>The Heater's worked -,the water pump  <font size="7" id='hrsON' color="#0040FF">-</font>
+     hours for <font size="7" id='psDays' color="#0040FF">-</font> days
 </div>
 
 
+<div>
+<img src="/camimage.jpg">
+</div>
+
+<div id='content'></div>
+
+</div>
+</div>
 </body>
 
 
 </html>
+
